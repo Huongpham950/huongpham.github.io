@@ -1,150 +1,473 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Pham Ngoc Huong - Data Analyst Portfolio">
-    <title>Pham Ngoc Huong - Data Analyst Portfolio</title>
+    <title>Pham Ngoc Huong - Data Analyst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Helvetica', Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; line-height: 1.6; }
-        header { background-color: #34495e; color: white; padding: 15px; text-align: center; }
-        nav { background-color: #ecf0f1; padding: 10px; text-align: center; }
-        nav a { margin: 0 10px; text-decoration: none; color: #34495e; font-weight: bold; }
-        nav a:hover { color: #2980b9; }
-        section { padding: 20px; max-width: 850px; margin: 0 auto; }
-        .profile-section { display: flex; align-items: center; background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .profile-photo { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 4px solid #34495e; }
-        .profile-info h2 { margin: 0 0 10px; font-size: 22px; color: #2c3e50; }
-        .profile-info p { margin: 5px 0; color: #7f8c8d; }
-        .social-links a { margin-right: 15px; color: #7f8c8d; font-size: 18px; }
-        .social-links a:hover { color: #2980b9; }
-        .buttons a { display: inline-block; margin-right: 10px; padding: 6px 12px; background-color: #ecf0f1; border-radius: 4px; text-decoration: none; color: #2c3e50; }
-        .buttons a:hover { background-color: #dcdcdc; }
-        .project { background-color: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        iframe { width: 100%; height: 400px; border: none; border-radius: 4px; }
-        .resume-section { background-color: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-        footer { text-align: center; padding: 10px; background-color: #34495e; color: white; }
-        a { color: #2980b9; }
-        a:hover { text-decoration: underline; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background-color: #ffffff;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            padding: 1rem 2rem;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #2563eb;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Header Section */
+        .header-section {
+            margin-bottom: 4rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .profile-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info .title {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .profile-info .bio {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.7;
+            font-style: italic;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: #2563eb;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        /* Section */
+        section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 80px;
+        }
+
+        section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 2rem;
+        }
+
+        /* Projects */
+        .project {
+            margin-bottom: 3rem;
+            padding-bottom: 3rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .project:last-child {
+            border-bottom: none;
+        }
+
+        .project h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+        }
+
+        .project p {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .project a {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .project a:hover {
+            text-decoration: underline;
+        }
+
+        .project iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        /* Skills */
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Resume */
+        .resume-content {
+            background-color: #f9fafb;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .resume-content p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .resume-content a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .resume-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Contact */
+        .contact-info p {
+            color: #666;
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+
+        .contact-info a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+            font-size: 0.9rem;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-photo {
+                width: 100px;
+                height: 100px;
+            }
+
+            nav ul {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            .project iframe {
+                height: 400px;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Pham Ngoc Huong</h1>
-        <p>Data Analyst | Turning Data into Insights</p>
-    </header>
+
     <nav>
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
-        <a href="#resume">Resume</a>
-        <a href="#skills">Skills</a>
-        <a href="#contact">Contact</a>
-    </nav>
-    <section id="about">
-        <div class="profile-section">
-            <img src="images/profile.jpg" alt="Pham Ngoc Huong's Profile Picture" class="profile-photo">
-            <div class="profile-info">
-                <h2>Pham Ngoc Huong</h2>
-                <p>Data Analyst</p>
-                <p>Hanoi, Vietnam</p>
-                <div class="social-links">
-                    <a href="www.linkedin.com/in/huongphamda" target="_blank"><i></i></a>
-                    <a href="mailto:huongpham950@gmail.com" target="_blank"><i>📧</i></a>
-                </div>
-                <div class="buttons">
-                    <a href="#contact">Get in touch</a>
-                </div>
-                <p>Experienced analytics professional assisting organizations in integrating analytics for growth and innovation.Working cross-functionally with business stakeholders, product, marketing and engineering teams to collect, understand and use data effectively.</p>
-            </div>
-        </div>
-    </section>
-    <section id="projects">
-        <h2>Projects</h2>
-        <div class="project">
-            <h3>Financial Management and KPI ASM Report for Fin company </h3>
-            <p> Developed an interactive dashboard to track key business KPIs and monitor financial risks for a finance company.</p>
-            <a href="https://github.com/Huongpham950/BCQT">View Project on GitHub</a>
-            <iframe src="https://app.powerbi.com/view?r=eyJrIjoiOTUwMzI0NjQtNmM4Yi00NDRjLWI4ZDQtOWUxZWFkMDMyZWYyIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=ba15e2409481ad4ad9e5" allowfullscreen></iframe>
-        </div>
-        <div class="project">
-            <h3>Pizza hut Project for Customer Segmentation</h3>
-            <p>Conducted customer segmentation with Python (Pandas, Scikit-learn,Pycaret) to enhance marketing strategies in next 6 months, visualized using Power BI.</p>
-            <a href="https://github.com/Huongpham950/Pizza-hut-project">View Project on GitHub</a>
-            <iframe src="https://app.powerbi.com/view?r=eyJrIjoiNDdiZGM5MTQtYjdiYS00YTdmLWI2OTItZjRhY2QyZTc5ZTQ1IiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=15308635e98f03b759c0" allowfullscreen></iframe>
-        </div>
-        <div class="project">
-            <h3>Uniace project- SEO Analytics</h3>
-            <p>Analyzed the impact of UNIACE’s “Young Talent” SEO campaign (August 2021) on website traffic and user engagement metrics.</p>
-            <a href="https://github.com/huongpham/retail-analysis">View Project on GitHub</a>
-            <iframe src="https://app.powerbi.com/view?r=eyJrIjoiMWE1MjhkYjItMGQ5MS00Nzk3LTlhYjQtMDBkZDkzNDcxOGYxIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=f11be432938d7bb29942" allowfullscreen></iframe>
-        </div>
-    </section>
-    <section id="resume">
-        <h2>Resume</h2>
-        <div class="resume-section">
-            <p>Download my detailed resume here: <a href="[DATA-ANALYST]HUONGPHAM-RESUME.pdf" download>Pham Ngoc Huong Resume</a></p>
-        </div>
-    </section>
-    <section id="skills">
-        <h2>Skills</h2>
         <ul>
-            <li>Python (Pandas, NumPy, Matplotlib, Scikit-learn)</li>
-            <li>SQL (PostgreSQL, MySQL, Bigquery)</li>
-            <li>Power BI, Looker Studio</li>
-            <li>Tableau</li>
-            <li>Excel, Google Sheets (Advanced)</li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#resume">Resume</a></li>
+            <li><a href="#contact">Contact</a></li>
         </ul>
-    </section>
-    <section id="contact">
-        <h2>Contact</h2>
-        <p>Email: <a href="mailto:huongpham950@gmail.com">huongpham950@gmail.com</a></p>
-        <p>LinkedIn: <a href="www.linkedin.com/in/huongphamda">Your Profile</a></p>
-        <p>
-                <strong>Feel free to contact me in English or Vietnamese </strong> for collaboration, data projects, or career opportunities.<br>        
-       </p>  
-            
-    </section>
+    </nav>
+
+    <div class="container">
+        <section id="about" class="header-section">
+            <div class="profile-header">
+                <img src="images/huongpham.jpg" alt="Pham Ngoc Huong" class="profile-photo">
+                <div class="profile-info">
+                    <h1>Pham Ngoc Huong</h1>
+                    <p class="title">Data Analyst</p>
+                    <p class="bio">Experienced analytics professional assisting organizations in integrating analytics for growth and innovation. Working cross-functionally with business stakeholders, product, marketing and engineering teams to collect, understand and use data effectively.</p>
+                </div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+            <div class="social-links" style="margin-top: 10px;">
+                <a href="https://www.linkedin.com/in/huongphamda" target="_blank" style="margin-right: 15px; text-decoration: none; color: #0a66c2;">
+                    <i class="fab fa-linkedin" style="margin-right: 6px;"></i>LinkedIn
+                </a>
+                <a href="mailto:huongpham950@gmail.com" style="text-decoration: none; color: #333;">
+                    <i class="fas fa-envelope" style="margin-right: 6px;"></i>Email
+                </a>
+                    <a href="https://github.com/Huongpham950" target="_blank" style="margin-right: 15px; text-decoration: none; color: #333;">
+                    <i class="fab fa-github" style="margin-right: 6px;"></i>GitHub
+                </a>
+
+            </div>
+            <div class="buttons">
+                <a href="#contact" class="btn btn-primary">Get in touch</a>
+                <a href="#resume" class="btn btn-secondary">View Resume</a>
+            </div>
+        </section>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+        <section id="projects">
+    <h2><i class="fa-solid fa-diagram-project"></i> Projects</h2>
+
+            <!-- Project 1 -->
+            <div class="project">
+                <h3><i class="fa-solid fa-chart-line"></i> Financial Management and KPI ASM Report for Fin Company</h3>
+
+                <p><strong><i class="fa-solid fa-bullseye"></i> Objective:</strong> Evaluate business performance and network expansion; identify high and low performers for strategic planning through reports for CEO, CFO, Sales Director, and Mid-level Managers.</p>
+
+          
+                <ul class="achievements">
+                    <li>Strengthened expertise in <strong>database design, SQL automation, and Power BI reporting</strong>.</li>
+                    <li>Successfully managed and integrated <strong>large financial and operational datasets</strong>.</li>
+                    <li>Delivered <strong>data-driven insights</strong> that enhanced executive decision-making.</li>
+                    <li>Built an end-to-end <strong>ETL workflow</strong> from data collection to visualization.</li>
+                </ul>
+
+                <p>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiOTUwMzI0NjQtNmM4Yi00NDRjLWI4ZDQtOWUxZWFkMDMyZWYyIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=ba15e2409481ad4ad9e5" target="_blank"><i class="fa-solid fa-chart-column"></i> View Report</a> |
+                    <a href="https://github.com/Huongpham950/BCQT" target="_blank"><i class="fa-brands fa-github"></i> View on GitHub</a>
+                </p>
+                <iframe src="https://app.powerbi.com/view?r=eyJrIjoiOTUwMzI0NjQtNmM4Yi00NDRjLWI4ZDQtOWUxZWFkMDMyZWYyIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=ba15e2409481ad4ad9e5" allowfullscreen></iframe>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project">
+                <h3><i class="fa-solid fa-pizza-slice"></i> Pizza Hut Project – Customer Segmentation</h3>
+
+                <p><strong><i class="fa-solid fa-bullseye"></i> Objective:</strong> Enhance marketing strategies by segmenting customers using RFM and BCG matrices based on transaction data.</p>
+
+                <p><strong><i class="fa-solid fa-trophy"></i> Achievements:</strong></p>
+                <ul class="achievements">
+                    <li>Applied <strong>RFM, BCG, and K-Means clustering</strong> for advanced segmentation.</li>
+                    <li>Used <strong>PyCaret</strong> to predict customer lifetime value and retention probability.</li>
+                    <li>Designed <strong>interactive Power BI dashboards</strong> for marketing insights.</li>
+                    <li>Strengthened skills in <strong>machine learning, data storytelling, and marketing analytics</strong>.</li>
+                </ul>
+
+                <p>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiNDdiZGM5MTQtYjdiYS00YTdmLWI2OTItZjRhY2QyZTc5ZTQ1IiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=15308635e98f03b759c0" target="_blank"><i class="fa-solid fa-chart-column"></i> View Report</a> |
+                    <a href="https://github.com/Huongpham950/Pizza-hut-project" target="_blank"><i class="fa-brands fa-github"></i> View on GitHub</a>
+                </p>
+                <iframe src="https://app.powerbi.com/view?r=eyJrIjoiNDdiZGM5MTQtYjdiYS00YTdmLWI2OTItZjRhY2QyZTc5ZTQ1IiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=15308635e98f03b759c0" allowfullscreen></iframe>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project">
+                <h3><i class="fa-solid fa-globe"></i> Uniace Project – SEO Analytics</h3>
+
+                <p><strong><i class="fa-solid fa-bullseye"></i> Objective:</strong> Evaluate the impact of UNIACE’s August 2021 “Young Talent” SEO campaign on website traffic and engagement.</p>
+
+                <p><strong><i class="fa-solid fa-trophy"></i> Achievements:</strong></p>
+                <ul class="achievements">
+                    <li>Enhanced skills in <strong>SQL, DAX, and SEO analytics</strong> for marketing insights.</li>
+                    <li>Delivered actionable insights on <strong>traffic trends and conversion rates</strong>.</li>
+                    <li>Improved understanding of <strong>content optimization and user engagement</strong>.</li>
+                    <li>Integrated digital marketing data into structured analytical workflows.</li>
+                </ul>
+
+                <p>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiMWE1MjhkYjItMGQ5MS00Nzk3LTlhYjQtMDBkZDkzNDcxOGYxIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=f11be432938d7bb29942" target="_blank"><i class="fa-solid fa-chart-column"></i> View Report</a> |
+                    <a href="https://github.com/huongpham/retail-analysis" target="_blank"><i class="fa-brands fa-github"></i> View on GitHub</a>
+                </p>
+                <iframe src="https://app.powerbi.com/view?r=eyJrIjoiMWE1MjhkYjItMGQ5MS00Nzk3LTlhYjQtMDBkZDkzNDcxOGYxIiwidCI6IjZhYzJhZDA2LTY5MmMtNDY2My1iN2FmLWE5ZmYyYTg2NmQwYyIsImMiOjEwfQ%3D%3D&pageName=f11be432938d7bb29942" allowfullscreen></iframe>
+            </div>
+        </section>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+        <section id="skills">
+            <h2><i class="fas fa-code" style="margin-right:8px; color:#0a66c2;"></i>Skills</h2>
+            <div class="skills-list">
+                <span class="skill-tag">Python (Pandas, NumPy, Matplotlib, Scikit-learn)</span>
+                <span class="skill-tag">SQL (PostgreSQL, MySQL, BigQuery)</span>
+                <span class="skill-tag">Power BI</span>
+                <span class="skill-tag">Looker Studio</span>
+                <span class="skill-tag">Tableau</span>
+                <span class="skill-tag">Excel & Google Sheets (Advanced)</span>
+            </div>
+        </section>
+
+       
+        <section id="resume">
+            <h2><i class="fas fa-file-pdf" style="margin-right:8px; color:#d32f2f;"></i>Resume</h2>
+            <div class="resume-content">
+                <p>Download my detailed resume to learn more about my experience and qualifications.</p>
+                <a href="[DATA-ANALYST]HUONGPHAM-RESUME.pdf" download>Download Resume (PDF) →</a>
+            </div>
+        </section>
+
+    
+        <section id="contact">
+            <h2><i class="fas fa-envelope-open-text" style="margin-right:8px; color:#0a66c2;"></i>Contact</h2>
+            <div class="contact-info">
+                <p><strong>Email:</strong> <a href="mailto:huongpham950@gmail.com">huongpham950@gmail.com</a></p>
+                <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/huongphamda" target="_blank">linkedin.com/in/huongphamda</a></p>
+                <p><strong>Location:</strong> Hanoi, Vietnam</p>
+                <p style="margin-top: 1.5rem;"><strong>Feel free to contact me in English or Vietnamese</strong> for collaboration, data projects, or career opportunities.</p>
+            </div>
+        </section>
+    </div>
+
+   
     <footer>
         <p>&copy; 2025 Pham Ngoc Huong. All rights reserved.</p>
     </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a, .buttons a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
